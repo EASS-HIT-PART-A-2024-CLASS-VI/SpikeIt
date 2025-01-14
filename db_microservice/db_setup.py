@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, create_engine
+from sqlalchemy import Column, Integer, String, Text, create_engine, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 Base = declarative_base()
@@ -14,12 +14,13 @@ class Drill(Base):
     description = Column(Text, nullable=True)
     category = Column(String, nullable=False)
     equipment = Column(String, nullable=False)
+    workout_id = Column(Integer, ForeignKey('workouts.id'), nullable=False)
 
 class Workout(Base):
     __tablename__ = 'workouts'
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    drills = Column(Text, nullable=False)  # Storing drill IDs as JSON
 
 def init_db():
     Base.metadata.create_all(bind=engine)
+
