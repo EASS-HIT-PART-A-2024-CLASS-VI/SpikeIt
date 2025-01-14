@@ -1,13 +1,22 @@
 version: '3.8'
 
 services:
-  backend:
+  db_service:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: ./db_microservice
+    ports:
+      - "5001:5001"
+    container_name: db_service
+    restart: always
+
+  backend_service:
+    build:
+      context: ./backend_microservice
     ports:
       - "5000:5000"
-    volumes:
-      - ./backend:/app
+    container_name: backend_service
+    restart: always
+    depends_on:
+      - db_service
     environment:
-      - NODE_ENV=development
+      - DB_SERVICE_URL=http://db_service:5001
