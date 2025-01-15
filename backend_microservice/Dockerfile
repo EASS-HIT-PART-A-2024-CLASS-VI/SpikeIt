@@ -1,7 +1,11 @@
-FROM python:3.9-slim
+FROM python:3.9
+
 WORKDIR /app
-COPY requirements.txt .
+
+COPY requirements.txt /app/
+
 RUN pip install --no-cache-dir -r requirements.txt
-COPY main.py .
-EXPOSE 5000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
+
+COPY . /app/
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

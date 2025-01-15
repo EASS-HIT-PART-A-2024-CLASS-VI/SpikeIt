@@ -1,38 +1,44 @@
 from fastapi import FastAPI, HTTPException
-import requests
-import os
+from pydantic import BaseModel
+import httpx
 
 app = FastAPI()
 
-# Environment variable for the database service URL
-DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://db_service:5001")
+class Drill(BaseModel):
+    id: int
+    name: str
+    duration: int
+    equipment: str
+    type: str
+    explanation: str
+    workout_id: int
 
-# Drill Endpoints
-@app.get("/drills/")
-def get_all_drills():
-    response = requests.get(f"{DB_SERVICE_URL}/drills/")
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
-    return response.json()
+class Workout(BaseModel):
+    workout_id: int
+    drills: list[Drill]
 
-@app.post("/drills/")
-def create_drill(data: dict):
-    response = requests.post(f"{DB_SERVICE_URL}/drills/", json=data)
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
-    return response.json()
+@app.post("/")
+async def root():
+    return {"message": "Welcome to SpikeIt!"}
 
-# Workout Endpoints
-@app.get("/workouts/")
-def get_all_workouts():
-    response = requests.get(f"{DB_SERVICE_URL}/workouts/")
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
-    return response.json()
+@app.post("/new_workout/")
+async def new_workout(workout: Workout):
+    async with httpx.AsyncClient() as client:
+        response = await client.post("http://db_microservice:8001/new_workout", json=workout.dict())
+        if response.status_code == 200:
+            return {"message": "Workout created successfully"}
+        raise HTTPException(status_code=400, detail="Failed to create workout")
 
-@app.post("/workouts/")
-def create_workout(data: dict):
-    response = requests.post(f"{DB_SERVICE_URL}/workouts/", json=data)
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
-    return response.json()
+@app.get("/show_workout/{workout_id}")
+async def show_workout(workout_id: int):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"http://db_microservice:8001/show_workout/{workout_id}")
+        if response.status_code == 200:
+            return response.json()
+        raise HTTPException(status_code=404, detail="Workout not found")
+
+@app.get("/show_all_workouts/")
+async def show_all_workouts():
+    async with httpx.AsyncClient() as client:
+        response = await client.get("http://db_microservice:8001/show_all_workouts")
+        return response.json()

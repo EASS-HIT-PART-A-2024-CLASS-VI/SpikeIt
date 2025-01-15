@@ -1,33 +1,38 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from db_setup import init_db, SessionLocal
-import db_operations
+from fastapi import FastAPI, HTTPException
+from db_operations import add_workout, get_workout, get_all_workouts
+from pydantic import BaseModel
+from typing import List
 
-init_db()  # Initialize the database
 app = FastAPI()
 
-# Dependency to get the database session
-def get_db():
-    db = SessionLocal()
+class Drill(BaseModel):
+    id: int
+    name: str
+    duration: int
+    equipment: str
+    type: str
+    explanation: str
+    workout_id: int
+
+class Workout(BaseModel):
+    workout_id: int
+    drills: List[Drill]
+
+@app.post("/new_workout")
+async def new_workout(workout: Workout):
     try:
-        yield db
-    finally:
-        db.close()
+        add_workout(workout.workout_id, [drill.dict() for drill in workout.drills])
+        return {"message": "Workout created successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-# Drill Endpoints
-@app.post("/drills/")
-def create_drill(data: dict, db: Session = Depends(get_db)):
-    return db_operations.create_drill(db, data)
+@app.get("/show_workout/{workout_id}")
+async def show_workout(workout_id: int):
+    drills = get_workout(workout_id)
+    if not drills:
+        raise HTTPException(status_code=404, detail="Workout not found")
+    return drills
 
-@app.get("/drills/")
-def get_drills(db: Session = Depends(get_db)):
-    return db_operations.get_all_drills(db)
-
-# Workout Endpoints
-@app.post("/workouts/")
-def create_workout(data: dict, db: Session = Depends(get_db)):
-    return db_operations.create_workout(db, data)
-
-@app.get("/workouts/")
-def get_workouts(db: Session = Depends(get_db)):
-    return db_operations.get_all_workouts(db)
+@app.get("/show_all_workouts")
+async def show_all_workouts():
+    return get_all_workouts()
