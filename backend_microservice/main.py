@@ -17,7 +17,7 @@ class Workout(BaseModel):
     workout_id: int
     drills: list[Drill]
 
-@app.post("/")
+@app.get("/")
 async def root():
     return {"message": "Welcome to SpikeIt!"}
 
