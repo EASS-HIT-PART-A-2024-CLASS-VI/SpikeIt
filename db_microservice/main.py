@@ -1,18 +1,19 @@
 from fastapi import FastAPI, HTTPException
-from db_operations import add_workout, get_workout, get_all_workouts
+from db_operations import add_workout, get_workout, get_all_workouts, create_db
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+
+create_db()
 
 app = FastAPI()
 
 class Drill(BaseModel):
-    id: int
+    id: Optional[int]=None
     name: str
     duration: int
     equipment: str
     type: str
     explanation: str
-    workout_id: int
 
 class Workout(BaseModel):
     workout_id: int
@@ -21,10 +22,16 @@ class Workout(BaseModel):
 @app.post("/new_workout")
 async def new_workout(workout: Workout):
     try:
-        add_workout(workout.workout_id, [drill.dict() for drill in workout.drills])
+        # Log incoming data for debugging
+        print(f"Received workout: {workout}")
+        
+        # Insert workout and drills into the database
+        add_workout([drill.dict() for drill in workout.drills])
         return {"message": "Workout created successfully"}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        print(f"Error occurred: {str(e)}")  # Log the error
+        raise HTTPException(status_code=400, detail="Failed to create workout")
+
 
 @app.get("/show_workout/{workout_id}")
 async def show_workout(workout_id: int):

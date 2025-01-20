@@ -6,27 +6,34 @@ DATABASE = "workouts.db"
 def create_db():
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
+
+    # Create workout table (no changes needed here)
+    c.execute('''CREATE TABLE IF NOT EXISTS workout (
+                    workout_id INTEGER PRIMARY KEY AUTOINCREMENT)''')
+
+    # Create drill table with id set to AUTOINCREMENT
     c.execute('''CREATE TABLE IF NOT EXISTS drill (
-                    id INTEGER PRIMARY KEY,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT,
                     duration INTEGER,
                     equipment TEXT,
                     type TEXT,
                     explanation TEXT,
-                    workout_id INTEGER)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS workout (
-                    workout_id INTEGER PRIMARY KEY)''')
+                    workout_id INTEGER,
+                    FOREIGN KEY(workout_id) REFERENCES workout(workout_id))''')
+
     conn.commit()
     conn.close()
 
-def add_workout(workout_id: int, drills: List[Dict]):
+def add_workout( drills: List[Dict]):
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
-    c.execute("INSERT INTO workout (workout_id) VALUES (?)", (workout_id,))
+    c.execute("INSERT INTO workout DEFAULT VALUES")
+    workout_id = c.lastrowid
     for drill in drills:
-        c.execute('''INSERT INTO drill (id, name, duration, equipment, type, explanation, workout_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)''', 
-                  (drill['id'], drill['name'], drill['duration'], drill['equipment'], drill['type'], 
+        c.execute('''INSERT INTO drill (name, duration, equipment, type, explanation, workout_id)
+                    VALUES (?, ?, ?, ?, ?, ?)''', 
+                  (drill['name'], drill['duration'], drill['equipment'], drill['type'], 
                    drill['explanation'], workout_id))
     conn.commit()
     conn.close()

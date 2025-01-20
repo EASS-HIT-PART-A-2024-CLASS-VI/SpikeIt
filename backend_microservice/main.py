@@ -1,17 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import httpx
+from typing import List, Optional
 
 app = FastAPI()
 
 class Drill(BaseModel):
-    id: int
+    id: Optional[int]=None
     name: str
     duration: int
     equipment: str
     type: str
     explanation: str
-    workout_id: int
 
 class Workout(BaseModel):
     workout_id: int
@@ -23,11 +23,17 @@ async def root():
 
 @app.post("/new_workout/")
 async def new_workout(workout: Workout):
+    # Prepare the data and send it to the DB microservice
     async with httpx.AsyncClient() as client:
-        response = await client.post("http://db_microservice:8001/new_workout", json=workout.dict())
+        payload = {
+            "workout_id": workout.workout_id,
+            "drills": [drill.dict() for drill in workout.drills]  # Ensure this is properly formatted
+        }
+        response = await client.post("http://db_microservice:8001/new_workout", json=payload)
         if response.status_code == 200:
             return {"message": "Workout created successfully"}
         raise HTTPException(status_code=400, detail="Failed to create workout")
+
 
 @app.get("/show_workout/{workout_id}")
 async def show_workout(workout_id: int):
