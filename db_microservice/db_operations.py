@@ -49,7 +49,14 @@ def get_workout(workout_id: int) -> List[Dict]:
 def get_all_workouts() -> List[Dict]:
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
-    c.execute("SELECT * FROM workout")
+    c.execute("SELECT workout_id FROM workout")
     workouts = c.fetchall()
+    all_workouts = []
+    for workout in workouts:
+        workout_id = workout[0]
+        c.execute("SELECT * FROM drill WHERE workout_id = ?", (workout_id,))
+        drills = c.fetchall()
+        drills_list = [dict(zip([column[0] for column in c.description], drill)) for drill in drills]
+        all_workouts.append({"workout_id": workout_id, "drills": drills_list})
     conn.close()
-    return [{"workout_id": workout[0]} for workout in workouts]
+    return all_workouts
