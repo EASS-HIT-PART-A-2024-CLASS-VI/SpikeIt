@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from db_operations import add_workout, get_workout, get_all_workouts, create_db
+from db_operations import add_workout, get_workout, get_all_workouts, create_db, get_drills_by_type
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -32,6 +32,12 @@ async def new_workout(workout: Workout):
         print(f"Error occurred: {str(e)}")  # Log the error
         raise HTTPException(status_code=400, detail="Failed to create workout")
 
+@app.get("/search_drills/{drill_type}")
+async def search_drills(drill_type: str):
+    drills = get_drills_by_type(drill_type)
+    if not drills:
+        raise HTTPException(status_code=404, detail="No drills found for this type")
+    return drills
 
 @app.get("/show_workout/{workout_id}")
 async def show_workout(workout_id: int):

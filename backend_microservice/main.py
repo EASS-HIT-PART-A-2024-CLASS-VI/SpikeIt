@@ -1,3 +1,4 @@
+from enum import Enum
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import httpx
@@ -5,21 +6,37 @@ from typing import List, Optional
 
 app = FastAPI()
 
+class DrillType(str, Enum):
+    Attack = "Attack"
+    Defence = "Defence"
+    Recive = "Recive"
+    Setting = "Setting"
+    Strength = "Strength"
+
 class Drill(BaseModel):
-    id: Optional[int]=None
+    id: Optional[int] = None
     name: str
     duration: int
     equipment: str
-    type: str
+    type: DrillType  # Use Enum here
     explanation: str
 
 class Workout(BaseModel):
     workout_id: int
     drills: list[Drill]
 
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to SpikeIt!"}
+
+@app.get("/search_drills/{drill_type}")
+async def search_drills(drill_type: str):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"http://db_microservice:8001/search_drills/{drill_type}")
+        if response.status_code == 200:
+            return response.json()
+        raise HTTPException(status_code=response.status_code, detail=response.text)
 
 @app.post("/new_workout/")
 async def new_workout(workout: Workout):

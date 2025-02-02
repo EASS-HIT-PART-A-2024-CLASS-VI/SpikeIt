@@ -60,3 +60,12 @@ def get_all_workouts() -> List[Dict]:
         all_workouts.append({"workout_id": workout_id, "drills": drills_list})
     conn.close()
     return all_workouts
+
+def get_drills_by_type(drill_type: str) -> List[Dict]:
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT * FROM drill WHERE type = ?", (drill_type,))
+    drills = c.fetchall()
+    conn.close()
+    return [dict(zip([column[0] for column in c.description], drill)) for drill in drills]
+
