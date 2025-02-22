@@ -106,5 +106,5 @@ docker-compose down
 
 ## 🎥 Video Demonstration
 For a step-by-step guide, watch this video tutorial:  
-(https://img.youtube.com/vi/ArNPxXf3f2w/0.jpg)](https://youtu.be/ArNPxXf3f2w)
+[![Unit Test Setup Tutorial](https://img.youtube.com/vi/ArNPxXf3f2w/0.jpg)](https://youtu.be/ArNPxXf3f2w)
 
