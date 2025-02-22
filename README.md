@@ -47,7 +47,7 @@ pip install -r frontend_microservice/requirements.txt
 
 ---
 
-## 🧪 Running Unit Tests
+## 🧦 Running Unit Tests in a Virtual Environment
 We use **pytest** for unit testing. No need to run Docker since we mock external dependencies.
 
 ### **🔹 Backend Microservice Tests**
@@ -77,7 +77,7 @@ deactivate
 
 ---
 
-## 🏗️ Running the Application with Docker Compose
+## 🛠️ Running the Application with Docker Compose
 Since the application is designed to run inside Docker, use the following commands to start it:
 
 ```bash
@@ -103,3 +103,8 @@ docker-compose down
 - **Docker network issues?** Try `docker-compose down --volumes` and restart.
 
 ---
+
+## 🎥 Video Demonstration
+For a step-by-step guide, watch this video tutorial:  
+(https://img.youtube.com/vi/ArNPxXf3f2w/0.jpg)](https://youtu.be/ArNPxXf3f2w)
+
